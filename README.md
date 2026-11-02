@@ -25,8 +25,22 @@ Demo-Website von Steppencode für Tierschutzvereine und Tierheime, umgesetzt nac
 - Der Hinweis „Spenden steuerlich absetzbar“ und der Text zur Absetzbarkeit (`src/components/Help.tsx`) gelten nur, wenn der Verein auf der Liste der begünstigten Spendenempfänger steht – sonst entfernen.
 - Tiere, Geschichte, Kennzahlen und Neuigkeiten (`src/data.ts`, `src/components/About.tsx`)
 - Fotos in `public/images/` (derzeit Unsplash-Fotos; das Hero-Bild ist aus dem Template-Entwurf ausgeschnitten)
-- „Kennenlernen“ und „Mehr erfahren“ öffnen eine vorbereitete E-Mail. Für echte Formulare an ein Backend anbinden, z. B. das Steppencode-CMS. Für Online-Spenden kann ein Zahlungsanbieter ergänzt werden.
+- „Kennenlernen“: Mit CMS landen Anfragen im CMS unter „Anfragen“, ohne CMS öffnet sich eine vorbereitete E-Mail. „Mehr erfahren“ sind E-Mail-Links. Online-Spenden gibt es nicht – die Spendenbox zeigt die Bankdaten (im CMS pflegbar).
 - Impressum- und Datenschutzseite
+
+## Inhalte aus dem CMS
+
+Die Website lädt ihre Inhalte aus dem Steppencode-CMS (Kunde **`tierschutz`**): Navigation, Footer, Website-Einstellungen, Seiten (Startseite, Impressum, Datenschutz) und Beiträge. Die Sektionen der Seiten rendert die Block-Laufzeit des CMS – jede Sektion ist im visuellen Editor des CMS bearbeitbar, neue Blöcke kommen mit dem nächsten CMS-Deploy automatisch.
+
+- `src/cms/` – Verbindung zum CMS (Kunde über `/api/tenants/lookup/tierschutz`, Block-Laufzeit, Navigation und Footer)
+- `src/theme/blocks.theme.css` – legt das Design dieser Website über die Blöcke. Die Vorschau im CMS-Editor lädt genau dieses Stylesheet von der Website, inklusive der selbst gehosteten Schriften (deshalb `serve --cors`).
+- Ist das CMS abgeschaltet (`VITE_CMS=off`), nicht erreichbar oder kennt den Kunden nicht, zeigt die Website ihre eingebauten Inhalte aus `src/data.ts`.
+
+Env (siehe `.env.example`): `VITE_CMS_URL` (Standard `https://cms.steppencode.at`), `VITE_TENANT` (Standard `tierschutz`), `VITE_CMS=off`.
+
+**Nach dem Deploy:** Im CMS unter **Kunden → tierschutz** die Domain dieser Website eintragen. Erst dann darf sie die CMS-API abfragen (CORS), und die Vorschau im Editor zeigt ihr Design.
+
+Formulare (Anfragen, Bestellungen, Vorbestellungen) landen im CMS unter **Anfragen**.
 
 ## Entwicklung
 

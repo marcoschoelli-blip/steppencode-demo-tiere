@@ -1,41 +1,64 @@
-import { navItems, org } from '../data'
+import type { FooterData } from '../cms/chrome'
+import { org, navItems } from '../data'
 import { Logo } from './Logo'
 
-export function Footer() {
+/** Eingebaute Inhalte – solange das CMS nichts liefert. */
+const FALLBACK: FooterData = {
+  nav: navItems,
+  legal: [
+    { label: 'Impressum', href: '#impressum' },
+    { label: 'Datenschutz', href: '#datenschutz' },
+  ],
+  copyright: `© ${new Date().getFullYear()} ${org.name}. Gemeinnütziger Verein.`,
+  claim: 'Tieren eine Chance geben.',
+  address: [org.street, org.city],
+  phone: org.phone,
+  email: org.email,
+}
+
+export function Footer({ data = FALLBACK }: { data?: FooterData }) {
   return (
     <footer className="footer">
       <div className="container footer__grid">
         <div>
           <Logo light />
-          <p className="footer__claim">Tieren eine Chance geben.</p>
+          {data.claim ? <p className="footer__claim">{data.claim}</p> : null}
         </div>
         <nav aria-label="Footer">
           <h4>Seiten</h4>
-          {navItems.map((n) => (
+          {data.nav.map((n) => (
             <a key={n.href} href={n.href}>
               {n.label}
             </a>
           ))}
         </nav>
         <div>
-          <h4>Spendenkonto</h4>
+          <h4>Kontakt</h4>
+          {data.address.length ? (
+            <p>
+              {data.address.map((line, i) => (
+                <span key={line}>
+                  {i > 0 ? <br /> : null}
+                  {line}
+                </span>
+              ))}
+            </p>
+          ) : null}
           <p>
-            IBAN {org.iban}
-            <br />
-            BIC {org.bic}
-          </p>
-          <p>
-            <a href={`tel:${org.phone.replace(/\s/g, '')}`}>{org.phone}</a>
-            <br />
-            <a href={`mailto:${org.email}`}>{org.email}</a>
+            {data.phone ? <a href={`tel:${data.phone.replace(/[^\d+]/g, '')}`}>{data.phone}</a> : null}
+            {data.phone && data.email ? <br /> : null}
+            {data.email ? <a href={`mailto:${data.email}`}>{data.email}</a> : null}
           </p>
         </div>
       </div>
       <div className="container footer__bottom">
-        <p>© {new Date().getFullYear()} {org.name}. Gemeinnütziger Verein.</p>
+        {data.copyright ? <p>{data.copyright}</p> : <span />}
         <div>
-          <a href="#impressum">Impressum</a>
-          <a href="#datenschutz">Datenschutz</a>
+          {data.legal.map((l) => (
+            <a key={l.href} href={l.href}>
+              {l.label}
+            </a>
+          ))}
         </div>
       </div>
     </footer>
