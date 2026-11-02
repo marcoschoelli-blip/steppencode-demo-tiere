@@ -1,9 +1,13 @@
 import { Heart, Menu, X } from 'lucide-react'
 import { useEffect, useState } from 'react'
+import type { NavItem } from '../cms/chrome'
 import { navItems } from '../data'
 import { Logo } from './Logo'
 
-export function Header() {
+const DEFAULT_CTA: NavItem = { label: 'Jetzt unterstützen', href: '#spenden' }
+
+/** Navigation – Menüpunkte und Button kommen aus dem CMS oder aus data.ts. */
+export function Header({ items = navItems, cta = DEFAULT_CTA }: { items?: NavItem[]; cta?: NavItem | null } = {}) {
   const [open, setOpen] = useState(false)
   const [scrolled, setScrolled] = useState(false)
 
@@ -23,18 +27,22 @@ export function Header() {
       <div className="container header__inner">
         <Logo />
         <nav className="header__nav" aria-label="Hauptnavigation">
-          {navItems.map((item) => (
+          {items.map((item) => (
             <a key={item.href} href={item.href} onClick={() => setOpen(false)}>
               {item.label}
             </a>
           ))}
-          <a href="#spenden" className="btn btn--primary header__mobile-cta" onClick={() => setOpen(false)}>
-            <Heart size={20} /> Jetzt unterstützen
-          </a>
+          {cta ? (
+            <a href={cta.href} className="btn btn--primary header__mobile-cta" onClick={() => setOpen(false)}>
+              <Heart size={20} /> {cta.label}
+            </a>
+          ) : null}
         </nav>
-        <a href="#spenden" className="btn btn--primary btn--sm header__cta">
-          <Heart size={20} /> Jetzt unterstützen
-        </a>
+        {cta ? (
+          <a href={cta.href} className="btn btn--primary btn--sm header__cta">
+            <Heart size={20} /> {cta.label}
+          </a>
+        ) : null}
         <button
           type="button"
           className="header__toggle"
