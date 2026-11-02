@@ -38,7 +38,7 @@ Die Website lädt ihre Inhalte aus dem Steppencode-CMS (Kunde **`tierschutz`**):
 
 Env (siehe `.env.example`): `VITE_CMS_URL` (Standard `https://cms.steppencode.at`), `VITE_TENANT` (Standard `tierschutz`), `VITE_CMS=off`.
 
-**Nach dem Deploy:** Im CMS unter **Kunden → tierschutz** die Domain dieser Website eintragen. Erst dann darf sie die CMS-API abfragen (CORS), und die Vorschau im Editor zeigt ihr Design.
+**Domain:** `tiere.steppencode.at` – im CMS beim Kunden **tierschutz** hinterlegt. Damit darf die Website die CMS-API abfragen (CORS), und die Vorschau im Editor zeigt ihr Design, sobald die Website unter dieser Adresse läuft.
 
 Formulare (Anfragen, Bestellungen, Vorbestellungen) landen im CMS unter **Anfragen**.
 
