@@ -5,6 +5,7 @@ import { navItems } from '../data'
 import { Logo } from './Logo'
 import { LanguageSwitch } from '../cms/LanguageSwitch'
 import type { LanguageLink } from '../cms/i18n'
+import { t } from '../cms/i18n'
 
 const DEFAULT_CTA: NavItem = { label: 'Jetzt unterstützen', href: '#spenden' }
 
@@ -32,7 +33,7 @@ export function Header({
     <header className={`header${scrolled ? ' header--scrolled' : ''}${open ? ' header--open' : ''}`}>
       <div className="container header__inner">
         <Logo />
-        <nav className="header__nav" aria-label="Hauptnavigation">
+        <nav className="header__nav" aria-label={t('Hauptnavigation')}>
           {items.map((item) => (
             <a key={item.href} href={item.href} onClick={() => setOpen(false)}>
               {item.label}
@@ -53,7 +54,7 @@ export function Header({
         <button
           type="button"
           className="header__toggle"
-          aria-label={open ? 'Menü schließen' : 'Menü öffnen'}
+          aria-label={open ? t('Menü schließen') : t('Menü öffnen')}
           aria-expanded={open}
           onClick={() => setOpen((v) => !v)}
         >

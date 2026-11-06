@@ -2,7 +2,7 @@ import { useEffect } from 'react'
 import { CmsBlocks, CmsRichText, scrollToHash } from './cms/CmsBlocks'
 import { applyMeta, footerFromCms, navFromCms } from './cms/chrome'
 import { currentPath, localHref, mediaUrl, type Post, type SiteBundle } from './cms/client'
-import { findPage, languageLinks, languagePrefix } from './cms/i18n'
+import { findPage, languageLinks, languagePrefix, t } from './cms/i18n'
 import { useCmsSite } from './cms/useCmsSite'
 import { About } from './components/About'
 import { Animals } from './components/Animals'
@@ -39,7 +39,7 @@ function CmsSite({ site }: { site: SiteBundle }) {
   }, [site.language, redirect, reload])
 
   useEffect(() => {
-    applyMeta(site, post?.title ?? page?.title ?? 'Seite nicht gefunden', post?.excerpt ?? page?.excerpt)
+    applyMeta(site, post?.title ?? page?.title ?? t('Seite nicht gefunden'), post?.excerpt ?? page?.excerpt)
   }, [site, page, post])
 
   return (
@@ -90,10 +90,10 @@ function NotFound() {
   return (
     <section className="section not-found">
       <div className="container">
-        <h1>Seite nicht gefunden</h1>
+        <h1>{t('Seite nicht gefunden')}</h1>
         <p>
           <a className="link-underline" href={localHref('/')}>
-            Zur Startseite
+            {t('Zur Startseite')}
           </a>
         </p>
       </div>

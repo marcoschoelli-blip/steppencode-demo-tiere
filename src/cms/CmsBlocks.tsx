@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { loadBlocksRuntime } from './blocksRuntime'
 import { getCmsUrl } from './client'
+import { t } from './i18n'
 
 /**
  * Sektionen einer Seite aus dem CMS – gerendert von dessen Block-Laufzeit.
@@ -63,7 +64,7 @@ export function CmsBlocks({
   return (
     <>
       {state === 'failed' ? (
-        <p className="cms-error">Die Inhalte konnten gerade nicht geladen werden. Bitte später erneut versuchen.</p>
+        <p className="cms-error">{t('Die Inhalte konnten gerade nicht geladen werden. Bitte später erneut versuchen.')}</p>
       ) : null}
       <div data-state={state} ref={ref} style={state === 'loading' ? { minHeight: '100vh' } : undefined} />
     </>

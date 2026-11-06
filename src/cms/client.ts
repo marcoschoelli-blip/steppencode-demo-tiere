@@ -15,6 +15,7 @@ import { DEFAULT_TENANT } from './config'
 import {
   docLanguage,
   languageFromPath,
+  setUiLanguage,
   siteLanguages,
   stripLanguage,
   withLanguage,
@@ -145,6 +146,7 @@ export async function loadSite(signal: AbortSignal): Promise<SiteBundle> {
   const languages = siteLanguages(settings[0]?.languages)
   const language = requested && languages.all.includes(requested) ? requested : languages.default
   active = { language, languages }
+  setUiLanguage(language)
   return {
     tenantId,
     language,

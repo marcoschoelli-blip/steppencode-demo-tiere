@@ -1,6 +1,7 @@
 import type { FooterData } from '../cms/chrome'
 import { org, navItems } from '../data'
 import { Logo } from './Logo'
+import { t } from '../cms/i18n'
 
 /** Eingebaute Inhalte – solange das CMS nichts liefert. */
 const FALLBACK: FooterData = {
@@ -24,8 +25,8 @@ export function Footer({ data = FALLBACK }: { data?: FooterData }) {
           <Logo light />
           {data.claim ? <p className="footer__claim">{data.claim}</p> : null}
         </div>
-        <nav aria-label="Footer">
-          <h4>Seiten</h4>
+        <nav aria-label={t('Fußzeile')}>
+          <h4>{t('Seiten')}</h4>
           {data.nav.map((n) => (
             <a key={n.href} href={n.href}>
               {n.label}
@@ -33,7 +34,7 @@ export function Footer({ data = FALLBACK }: { data?: FooterData }) {
           ))}
         </nav>
         <div>
-          <h4>Kontakt</h4>
+          <h4>{t('Kontakt')}</h4>
           {data.address.length ? (
             <p>
               {data.address.map((line, i) => (
