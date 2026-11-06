@@ -38,6 +38,31 @@ export type BlocksRuntime = {
   build: string
   mountBlocks: (element: Element, props: BlocksMountProps) => MountHandle<BlocksMountProps>
   mountRichText: (element: Element, props: RichTextMountProps) => MountHandle<RichTextMountProps>
+  /** Seite eines Beitrags (`/beitraege/<slug>`) – fehlt in älteren Laufzeiten. */
+  mountPost?: (element: Element, props: PostMountProps) => MountHandle<PostMountProps>
+  /** Übersicht aller Beiträge (`/beitraege`) – fehlt in älteren Laufzeiten. */
+  mountPostList?: (element: Element, props: PostListMountProps) => MountHandle<PostListMountProps>
+}
+
+export type PostMountProps = {
+  /** Beitrag aus der REST-API – fehlt er, lädt die Laufzeit ihn über `slug`. */
+  post?: unknown
+  slug?: string
+  cmsUrl?: string
+  tenantId?: string
+  pageBasePath?: string
+  postBasePath?: string
+  posts?: unknown[]
+}
+
+export type PostListMountProps = {
+  title?: string
+  intro?: string
+  cmsUrl?: string
+  tenantId?: string
+  pageBasePath?: string
+  postBasePath?: string
+  posts?: unknown[]
 }
 
 declare global {

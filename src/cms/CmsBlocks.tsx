@@ -88,3 +88,79 @@ export function scrollToHash() {
   const id = decodeURIComponent(window.location.hash.slice(1))
   if (id) document.getElementById(id)?.scrollIntoView()
 }
+
+type PostRoot = 'post' | 'list'
+
+/**
+ * Beitragsseite (`/beitraege/<slug>`) und Übersicht (`/beitraege`) – beides
+ * zeichnet die Block-Laufzeit des CMS, für alle Websites gleich und im
+ * Theme dieser Website. Diese hier gibt nur Kopf und Fuß dazu.
+ */
+function CmsPostRoot({
+  kind,
+  post,
+  posts,
+  slug,
+  tenantId,
+  title,
+}: {
+  kind: PostRoot
+  post?: unknown
+  posts?: unknown[]
+  slug?: string
+  tenantId: string
+  title?: string
+}) {
+  const ref = useRef<HTMLDivElement>(null)
+  const [state, setState] = useState<'loading' | 'ready' | 'failed'>('loading')
+
+  useEffect(() => {
+    let cancelled = false
+    let unmount: (() => void) | undefined
+    loadBlocksRuntime()
+      .then((runtime) => {
+        if (cancelled || !ref.current) return
+        const common = { cmsUrl: getCmsUrl(), tenantId, pageBasePath: '/', postBasePath: '/beitraege', posts }
+        if (kind === 'post' && runtime.mountPost) {
+          unmount = runtime.mountPost(ref.current, { ...common, post, slug }).unmount
+        } else if (kind === 'list' && runtime.mountPostList) {
+          unmount = runtime.mountPostList(ref.current, { ...common, title }).unmount
+        } else if (kind === 'post') {
+          // Ältere Laufzeit: nur der Text.
+          const content = post && typeof post === 'object' ? (post as { content?: unknown }).content : null
+          unmount = runtime.mountRichText(ref.current, { content, cmsUrl: common.cmsUrl }).unmount
+        } else {
+          unmount = runtime.mountBlocks(ref.current, {
+            ...common,
+            blocks: [{ blockType: 'latestPosts', layout: 'grid', columns: '3', limit: 9, pagination: 'pages' }],
+          }).unmount
+        }
+        setState('ready')
+      })
+      .catch((error) => {
+        console.error('[blocks]', error)
+        if (!cancelled) setState('failed')
+      })
+    return () => {
+      cancelled = true
+      unmount?.()
+    }
+  }, [kind, post, posts, slug, tenantId, title])
+
+  return (
+    <>
+      {state === 'failed' ? (
+        <p className="cms-error">Die Inhalte konnten gerade nicht geladen werden. Bitte später erneut versuchen.</p>
+      ) : null}
+      <div ref={ref} style={state === 'loading' ? { minHeight: '60vh' } : undefined} />
+    </>
+  )
+}
+
+export function CmsPost(props: { post?: unknown; posts?: unknown[]; slug: string; tenantId: string }) {
+  return <CmsPostRoot kind="post" {...props} />
+}
+
+export function CmsPostList(props: { posts?: unknown[]; tenantId: string; title?: string }) {
+  return <CmsPostRoot kind="list" {...props} />
+}

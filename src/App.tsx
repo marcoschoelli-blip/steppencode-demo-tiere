@@ -1,7 +1,7 @@
 import { useEffect } from 'react'
-import { CmsBlocks, CmsRichText, scrollToHash } from './cms/CmsBlocks'
+import { CmsBlocks, CmsPost, CmsPostList, scrollToHash } from './cms/CmsBlocks'
 import { applyMeta, footerFromCms, navFromCms } from './cms/chrome'
-import { currentPath, mediaUrl, type Post, type SiteBundle } from './cms/client'
+import { currentPath, type SiteBundle } from './cms/client'
 import { useCmsSite } from './cms/useCmsSite'
 import { About } from './components/About'
 import { Animals } from './components/Animals'
@@ -24,19 +24,28 @@ export default function App() {
 function CmsSite({ site }: { site: SiteBundle }) {
   const path = currentPath()
   const page = site.pages.find((p) => p.slug === path)
-  const post = path.startsWith('beitraege/') ? site.posts.find((p) => `beitraege/${p.slug}` === path) : undefined
+  // Beiträge: Übersicht und eigene Seite – sofern keine CMS-Seite so heißt.
+  const postSlug = !page && path.startsWith('beitraege/') ? path.slice('beitraege/'.length) : null
+  const post = postSlug ? site.posts.find((p) => p.slug === postSlug) : undefined
+  const postList = !page && path === 'beitraege'
   const { items, cta } = navFromCms(site)
 
   useEffect(() => {
-    applyMeta(site, post?.title ?? page?.title ?? 'Seite nicht gefunden', post?.excerpt ?? page?.excerpt)
-  }, [site, page, post])
+    applyMeta(
+      site,
+      post?.title ?? (postList ? 'Beiträge' : page?.title) ?? 'Seite nicht gefunden',
+      post?.excerpt ?? page?.excerpt,
+    )
+  }, [site, page, post, postList])
 
   return (
     <>
       <Header items={items} cta={cta} />
       <main className="sc-page" id="top">
-        {post ? (
-          <PostView post={post} />
+        {postSlug ? (
+          <CmsPost post={post} posts={site.posts} slug={postSlug} tenantId={site.tenantId} />
+        ) : postList ? (
+          <CmsPostList posts={site.posts} tenantId={site.tenantId} />
         ) : page ? (
           <CmsBlocks blocks={page.layout || []} onRendered={scrollToHash} posts={site.posts} tenantId={site.tenantId} />
         ) : (
@@ -45,26 +54,6 @@ function CmsSite({ site }: { site: SiteBundle }) {
       </main>
       <Footer data={footerFromCms(site, items)} />
     </>
-  )
-}
-
-const dateFormat = new Intl.DateTimeFormat('de-AT', { day: 'numeric', month: 'long', year: 'numeric' })
-
-/** Beitrag aus „Aktuelles“ – Text gerendert von der Block-Laufzeit. */
-function PostView({ post }: { post: Post }) {
-  const image = mediaUrl(post.featuredImage)
-  return (
-    <article className="section post-view">
-      <div className="container post-view__inner">
-        <a className="link-underline post-view__back" href="/#aktuelles">
-          Zurück zu Aktuelles
-        </a>
-        {post.publishedAt ? <time dateTime={post.publishedAt}>{dateFormat.format(new Date(post.publishedAt))}</time> : null}
-        <h1>{post.title}</h1>
-        {image ? <img alt="" className="post-view__image" src={image} /> : null}
-        <CmsRichText className="post-view__text" content={post.content} />
-      </div>
-    </article>
   )
 }
 

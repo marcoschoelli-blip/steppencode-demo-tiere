@@ -299,3 +299,10 @@
   background: var(--green);
   color: #fff;
 }
+
+/* Beiträge (Übersicht und Beitragsseite, gezeichnet von der Block-Laufzeit):
+   unter dem fixierten Kopf beginnen statt darunter zu verschwinden. */
+main.sc-page--posts,
+main.sc-page--post {
+  padding-top: var(--header-h);
+}
