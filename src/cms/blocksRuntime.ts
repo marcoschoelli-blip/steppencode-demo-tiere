@@ -25,6 +25,8 @@ export type BlocksMountProps = {
   pageBasePath?: string
   postBasePath?: string
   posts?: unknown[]
+  /** Sprache der Seite (`de`, `en` …) – feste Texte der Blöcke, Formate. */
+  locale?: string
 }
 
 export type RichTextMountProps = {

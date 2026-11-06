@@ -1,4 +1,4 @@
-import { linkUrl, type SiteBundle } from './client'
+import { linkUrl, localHref, type SiteBundle } from './client'
 
 /** Ein Link, wie Navigation und Footer ihn brauchen. */
 export type NavItem = { label: string; href: string }
@@ -35,7 +35,7 @@ export function footerFromCms(site: SiteBundle, nav: NavItem[]): FooterData {
   const copyright = site.footer?.copyright?.trim() || null
   return {
     nav,
-    legal: (site.footer?.navItems || []).filter((l) => l.label && l.url).map((l) => ({ label: l.label, href: l.url })),
+    legal: (site.footer?.navItems || []).filter((l) => l.label && l.url).map((l) => ({ label: l.label, href: localHref(l.url) })),
     // „©“ am Anfang um das aktuelle Jahr ergänzen, damit es nicht veraltet.
     copyright: copyright ? copyright.replace(/^©\s*(?!\d)/, `© ${new Date().getFullYear()} `) : null,
     claim: site.settings?.tagline || null,

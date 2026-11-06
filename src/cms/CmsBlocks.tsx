@@ -13,10 +13,16 @@ export function CmsBlocks({
   posts,
   tenantId,
   onRendered,
+  locale,
+  basePath = '',
 }: {
   blocks: unknown[]
   posts?: unknown[]
   tenantId: string
+  /** Sprache der Seite – feste Texte der Blöcke, Datums- und Zahlenformate. */
+  locale?: string
+  /** Präfix der Sprache (`/en`), leer für die Standardsprache. */
+  basePath?: string
   onRendered?: () => void
 }) {
   const ref = useRef<HTMLDivElement>(null)
@@ -36,9 +42,10 @@ export function CmsBlocks({
           blocks,
           cmsUrl: getCmsUrl(),
           tenantId,
-          pageBasePath: '/',
-          postBasePath: '/beitraege',
+          pageBasePath: basePath || '/',
+          postBasePath: `${basePath}/beitraege`,
           posts,
+          locale,
         }).unmount
         setState('ready')
         window.requestAnimationFrame(() => rendered.current?.())
@@ -51,7 +58,7 @@ export function CmsBlocks({
       cancelled = true
       unmount?.()
     }
-  }, [blocks, posts, tenantId])
+  }, [blocks, posts, tenantId, locale, basePath])
 
   return (
     <>

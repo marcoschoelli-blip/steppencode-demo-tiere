@@ -12,6 +12,14 @@
  * - VITE_CMS=off   CMS abschalten – die Website zeigt dann ihre eingebauten Inhalte
  */
 import { DEFAULT_TENANT } from './config'
+import {
+  docLanguage,
+  languageFromPath,
+  siteLanguages,
+  stripLanguage,
+  withLanguage,
+  type SiteLanguages,
+} from './i18n'
 
 const CMS_URL = (import.meta.env.VITE_CMS_URL || 'https://cms.steppencode.at').replace(/\/$/, '')
 const TENANT = String(import.meta.env.VITE_TENANT || DEFAULT_TENANT).trim()
@@ -34,6 +42,9 @@ export type Page = {
   slug: string
   excerpt?: string | null
   layout?: unknown[] | null
+  /** Mehrsprachig: Sprache der Seite und Seite in der Standardsprache. */
+  language?: string | null
+  translationOf?: { id: number | string } | number | string | null
 }
 
 export type Post = {
@@ -44,13 +55,16 @@ export type Post = {
   content?: Lexical
   publishedAt?: string | null
   featuredImage?: MediaDoc | number | null
+  language?: string | null
+  translationOf?: { id: number | string } | number | string | null
 }
 
 export type NavLink = {
   label?: string | null
   type?: 'page' | 'post' | 'custom' | 'none' | null
   url?: string | null
-  page?: { slug?: string | null } | number | null
+  /** `sitePath`: fertige Adresse vom CMS, auf mehrsprachigen Websites mit Sprache (`/en/contact`). */
+  page?: { slug?: string | null; sitePath?: string | null } | number | null
   post?: { slug?: string | null } | number | null
 }
 
@@ -67,12 +81,16 @@ export type FooterDoc = {
 export type SiteSettings = {
   siteName?: string | null
   tagline?: string | null
+  languages?: { default?: string | null; additional?: string[] | null } | null
   contact?: { email?: string | null; phone?: string | null; address?: string | null } | null
   seo?: { metaTitle?: string | null; metaDescription?: string | null } | null
 }
 
 export type SiteBundle = {
   tenantId: string
+  /** Sprache dieser Adresse und alle Sprachen der Website. */
+  language: string
+  languages: SiteLanguages
   settings: SiteSettings | null
   header: HeaderDoc | null
   footer: FooterDoc | null
@@ -97,8 +115,11 @@ async function list<T>(
   signal: AbortSignal,
   published = false,
   sort?: string,
+  lang?: string | null,
 ): Promise<T[]> {
   const params = new URLSearchParams({ depth: '2', limit: '100' })
+  // Menü, Fußzeile und Einstellungen in dieser Sprache (Übersetzungen aus dem CMS).
+  if (lang) params.set('lang', lang)
   if (sort) params.set('sort', sort)
   if (published) {
     params.set('where[and][0][tenant][equals]', tenantId)
@@ -113,34 +134,53 @@ async function list<T>(
 
 export async function loadSite(signal: AbortSignal): Promise<SiteBundle> {
   const tenantId = await resolveTenantId(signal)
+  const requested = languageFromPath()
   const [settings, header, footer, pages, posts] = await Promise.all([
-    list<SiteSettings>('site-settings', tenantId, signal),
-    list<HeaderDoc>('header', tenantId, signal),
-    list<FooterDoc>('footer', tenantId, signal),
+    list<SiteSettings>('site-settings', tenantId, signal, false, undefined, requested),
+    list<HeaderDoc>('header', tenantId, signal, false, undefined, requested),
+    list<FooterDoc>('footer', tenantId, signal, false, undefined, requested),
     list<Page>('pages', tenantId, signal, true),
     list<Post>('posts', tenantId, signal, true, '-publishedAt'),
   ])
+  const languages = siteLanguages(settings[0]?.languages)
+  const language = requested && languages.all.includes(requested) ? requested : languages.default
+  active = { language, languages }
   return {
     tenantId,
+    language,
+    languages,
     settings: settings[0] || null,
     header: header[0] || null,
     footer: footer[0] || null,
     pages,
-    posts,
+    // Nur Beiträge in der Sprache dieser Adresse.
+    posts: posts.filter((post) => docLanguage(post, languages) === language),
   }
+}
+
+/** Sprache der geladenen Website – für Links und die aktuelle Adresse. */
+let active: { language: string; languages: SiteLanguages } = {
+  language: 'de',
+  languages: { default: 'de', all: ['de'] },
+}
+
+/** Interne Adresse in der Sprache der Seite (`/kontakt` → `/en/kontakt`). */
+export function localHref(href: string): string {
+  return withLanguage(href, active.language, active.languages)
 }
 
 /** Ziel eines Menüpunkts als Adresse. */
 export function linkUrl(link: NavLink | null | undefined): string | null {
   if (!link) return null
   if (link.type === 'page' && link.page && typeof link.page === 'object') {
+    if (link.page.sitePath) return link.page.sitePath
     const slug = link.page.slug
-    return !slug || slug === 'home' ? '/' : `/${slug}`
+    return localHref(!slug || slug === 'home' ? '/' : `/${slug}`)
   }
   if (link.type === 'post' && link.post && typeof link.post === 'object') {
-    return link.post.slug ? `/beitraege/${link.post.slug}` : null
+    return link.post.slug ? localHref(`/beitraege/${link.post.slug}`) : null
   }
-  return link.url || null
+  return link.url ? localHref(link.url) : null
 }
 
 export function mediaUrl(media: MediaDoc | number | null | undefined): string | null {
@@ -150,5 +190,6 @@ export function mediaUrl(media: MediaDoc | number | null | undefined): string | 
 
 /** Pfad der aktuellen Adresse: "" → home, "impressum", "beitraege/xyz" */
 export function currentPath(): string {
-  return window.location.pathname.replace(/^\/+|\/+$/g, '') || 'home'
+  const path = stripLanguage(window.location.pathname, active.language, active.languages)
+  return path.replace(/^\/+|\/+$/g, '') || 'home'
 }

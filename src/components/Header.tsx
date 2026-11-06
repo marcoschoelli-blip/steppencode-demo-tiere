@@ -3,11 +3,17 @@ import { useEffect, useState } from 'react'
 import type { NavItem } from '../cms/chrome'
 import { navItems } from '../data'
 import { Logo } from './Logo'
+import { LanguageSwitch } from '../cms/LanguageSwitch'
+import type { LanguageLink } from '../cms/i18n'
 
 const DEFAULT_CTA: NavItem = { label: 'Jetzt unterstützen', href: '#spenden' }
 
 /** Navigation – Menüpunkte und Button kommen aus dem CMS oder aus data.ts. */
-export function Header({ items = navItems, cta = DEFAULT_CTA }: { items?: NavItem[]; cta?: NavItem | null } = {}) {
+export function Header({
+  items = navItems,
+  cta = DEFAULT_CTA,
+  languages,
+}: { items?: NavItem[]; cta?: NavItem | null; languages?: LanguageLink[] } = {}) {
   const [open, setOpen] = useState(false)
   const [scrolled, setScrolled] = useState(false)
 
@@ -37,6 +43,7 @@ export function Header({ items = navItems, cta = DEFAULT_CTA }: { items?: NavIte
               <Heart size={20} /> {cta.label}
             </a>
           ) : null}
+          <LanguageSwitch links={languages} />
         </nav>
         {cta ? (
           <a href={cta.href} className="btn btn--primary btn--sm header__cta">

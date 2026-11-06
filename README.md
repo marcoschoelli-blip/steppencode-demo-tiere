@@ -50,3 +50,8 @@ npm run dev      # http://localhost:5173
 npm run build    # Ausgabe in dist/
 npm start        # dist/ auf Port 3000 ausliefern (Dokploy/Nixpacks)
 ```
+
+## Mehrere Sprachen
+
+Die Website kann mehrsprachig laufen – eingestellt im CMS unter *Website-Einstellungen → Sprachen*. Die Standardsprache steht ohne Präfix in der Adresse, weitere Sprachen mit (`/en/…`). Die Website erkennt die Sprache am Präfix, lädt Menü, Fußzeile und Einstellungen mit `?lang=` in dieser Sprache, zeigt die Seite dieser Sprache, gibt `locale` an die Block-Laufzeit (feste Texte, Datumsformate) und setzt `<html lang>`. Der Sprachumschalter in der Navigation erscheint erst ab zwei Sprachen und führt zur selben Seite in der anderen Sprache. Code: `src/cms/i18n.ts`. Details im README des CMS unter „Mehrsprachige Websites“.
+
